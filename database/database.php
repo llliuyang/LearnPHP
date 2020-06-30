@@ -98,9 +98,19 @@ if ($result) {
 }else {
     echo '错误'.$sql.mysqli_error($conn);
 };
-//取出值
-$fecth = "SELECT * FROM members";
-$res = mysqli_query($conn,$fecth);
+/*  取出值
+ *  排序操作 SELECT * FROM table_name ORDER BY column_name(s) ASC|DESC
+ *  ASC (ascending order) 升序
+ *  DESC(Descending order) 降序
+ * 拼音排序需转码再排序，若是用的就是gbk,那么无需转码
+ */
+$fecth = "SELECT * FROM members ORDER BY CONVERT(姓名 using gbk) DESC";
+
+//面向过程方法
+//$res = mysqli_query($conn,$fecth);
+
+//面向对象方法
+$res = $conn -> query($fecth);
 ?>
     <style>
         *{margin: 0;padding: 0}
@@ -124,9 +134,15 @@ $res = mysqli_query($conn,$fecth);
 
 
 <?php
+//面向过程
 if(mysqli_num_rows($res) > 0){
+    //面向对象语句
+    //if($res->num_rows > 0)
+
     //输出
     while($row = mysqli_fetch_array($res)){
+        //面向对象语句
+        //while($row = $res->fetch_array())
         echo <<<HTML
 <div class="tbodyrow">
 <span class="id tbody">{$row["id"]}</span>
@@ -145,8 +161,23 @@ echo "输出错误";
 </div>
 
 <?php
+//修改更新数据
+/*$update = "UPDATE members SET
+姓名='牛二' , 内容='我叫牛二'
+WHERE 姓名 = '张三' ";*/
+//mysqli_query($conn,$update);
+//$conn -> query($update);
+
+//删除数据
+//$delete = " DELETE FROM members WHERE 姓名 = '牛二' ";
+//mysqli_query($conn,$delete);
+
+//$conn -> query($delete);
+
 //关闭数据库连接 （1） 面向过程
 //mysqli_close($conn);
+
 //关闭数据库连接 （2） 面向对象
+
 $conn -> close();
 ?>
