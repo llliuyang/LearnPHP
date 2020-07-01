@@ -1,0 +1,5 @@
+this is the origin test file.
+php is the best language in the world!
+the last line is 3rd.
+
+this is 4th line writein with fwrite
