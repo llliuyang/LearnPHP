@@ -1,0 +1,48 @@
+*{margin: 0;padding: 0}
+[v-cloak]{display: none}
+/*搜索bar*/
+#app{max-width:1000px;margin: 0 auto;box-sizing: border-box;border: 1px solid #eee}
+nav.nav{width: 90%;margin: 50px auto;padding: 20px 0;display: flex;justify-content: space-between}
+.searchBar{width: 70%;position: relative}
+.searchBar .searchbar-main{width: 100%;height: 42px;font-size: 0;border: 1px solid dodgerblue;box-sizing: border-box;display: flex;position: relative;z-index: 1}
+.searchBar .searchbar-main .search{display: block;width: 80%;height: 100%;box-sizing: border-box;border: none;text-indent: 2em}
+.searchBar .searchbar-main .search:focus{outline: none}
+.searchBar .searchbar-main input[type=button]{width: 20%;height: 100%;box-sizing: border-box;border: none;background: dodgerblue;color: white;font-size: 16px;font-weight: bold;letter-spacing: 4px;cursor: pointer}
+.searchBar .searchbar-main input[type=button]:focus{outline: none}
+.search-condition{position: absolute;top: -40px;left: 0;height: 40px;z-index: 0}
+.search-condition span{display: inline-block;height:100%;padding: 0 20px;background: #ccc;;position: relative;top: 6px;line-height: 36px;transition: .4s linear;cursor: pointer;margin-right: 1px;}
+.active{background: dodgerblue !important;color: white;line-height: 40px !important;top:0px !important;}
+.operation{height: 42px;width: 25%;display: flex;justify-content: space-between}
+.operation span{width: 46%;height: 100%;color: #fff;display: inline-block;text-align: center;line-height: 42px;letter-spacing: 2px;
+    cursor: pointer;}
+.addNew{background: #17A2B8}
+.truncate{background: #DC3545}
+
+
+/*表格样式*/
+table{width: 100%;font-size: 0;box-sizing: border-box;border-spacing: 0}
+tr td{font-size: 16px;color: #555;border: 1px solid #ccc;box-sizing: border-box;height: 44px;text-align: center}
+thead tr td{font-weight: bold;background: #17A2B8;color: #fff;height: 42px}
+tbody{overflow: hidden}
+.uid{width: 10%}
+.uname{width: 15%;}
+uphone{width: 23%}
+.uaddress{width: 32%;}
+.op{width: 20%}
+td.op span{width: 40%;height: 34px;display: inline-block;color: #fff;line-height: 34px;cursor: pointer}
+td.op span.change{background: #28a745}
+td.op span.delete{background: #dc3545}
+td.op span.confirm{height: 100%;background: orangered !important;width: 100% !important;}
+.nodata{text-align: center;margin: 20px 0}
+
+/*弹出层*/
+.layer{width: 100%;height: 100%;background: rgba(0,0,0,0.5);position: fixed;top: 0;left: 0;z-index: 999}
+.layer .layer_form{width: 40%;background: #f2f2f2;position: fixed;top: 50%;left: 50%;transform: translateY(-50%);margin-left: -20%;box-sizing: border-box;padding: 40px 20px}
+.layer .layer_title{font-size: 24px;font-weight: bold;letter-spacing: 2px;color: #17A2B8;margin-bottom: 30px}
+.layer label{margin: 20px 0 10px;display: block;font-size: 16px;font-weight: bold;color: #555555}
+.layer input{display: block;width: 100%;height: 40px;border: 1px solid #ccc;text-indent: 2em;transition: 0.3s linear}
+.layer input:focus{border: 1px solid #17A2B8;outline: none}
+.layer button{width: 30%;height: 42px;margin-top: 20px;cursor: pointer;color: white;font-size: 16px;font-weight: bold;letter-spacing: 4px}
+.layer button,.layer button:focus{border: none;outline: none}
+.layer button#submit{background: #28a745}
+.layer button#cancel{background: #DC3545}
