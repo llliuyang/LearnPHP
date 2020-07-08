@@ -19,7 +19,7 @@
             <div class="searchbar-main">
                 <input type="text" class="search"
                        :placeholder="placeholder"
-                       @keyup.enter="search"
+                       @keyup="search"
                        v-model="inputValue"
                        v-focus list="search_item">
 
@@ -112,12 +112,15 @@
             index: '-1',
             placeholder:'请输入您想查询的字段',
             datalists : [
-                {id:1,name:'zs',phone:7545,address:'qweqe'},
-                {id:2,name:'zdsas',phone:7581,address:'qwesadaqe'}
+                {id:1,name:'张三',phone:15678361258,address:'湖北武汉'},
+                {id:2,name:'张三',phone:15678361258,address:'江西赣州'},
+                {id:3,name:'李四',phone:15628569934,address:'湖北荆州'},
+                {id:4,name:'李四',phone:15628569935,address:'湖北荆州'}
             ],
             searchlist:[],
             showlist:[],
             layerlist:[],
+            searchres : [],
             layertitle :'',
             confirmbtn:'',
             mode:{
@@ -128,6 +131,7 @@
             }
         },
         created: function () {
+
             this.encodeArray(this.datalists);
             this.active(0);
         },
@@ -199,31 +203,87 @@
                 switch (condition) {
                     case 0:
                         mode = 'isGlobal';
-                        console.log(mode)
                         break;
                     case 1:
                         mode = 'isName';
-                        console.log(mode)
                         break;
                     case 2:
                         mode = 'isPhone';
-                        console.log(mode)
                         break;
                     case 3:
                         mode = 'isAddress';
-                        console.log(mode)
                         break;
                     default:
                         mode = 'isGlobal';
-                        console.log(mode)
                 }
                 this.changemode(this.mode,mode)
             },
             search(e) {
+                if(this.inputValue){
+                    this.searchlist =[];
+                    this.searchres=[];
+
+                    if(this.mode.isName){
+                        this.datalists.forEach(item=>{
+                            if(item.name.includes(this.inputValue)){
+                                if(!this.searchlist.includes(this.inputValue)){
+                                    this.searchlist.push(item.name);
+                                    this.searchlist=[...new Set(this.searchlist)]
+                                }
+                                this.searchres.push(item)
+                            }
+                        })
+                    }else if (this.mode.isPhone){
+                        this.datalists.forEach(item => {
+                            this.searchlist.push(item.phone);
+                            this.searchlist = [...new Set(this.searchlist)]
+                            if(item.phone === Number(this.inputValue)){
+                                this.searchres.push(item)
+                            }
+                        })
+                    }else if(this.mode.isAddress){
+                        this.datalists.forEach(item=>{
+                            if(item.address.includes(this.inputValue)){
+                                if(!this.searchlist.includes(this.inputValue)){
+                                    this.searchlist.push(item.address);
+                                    this.searchlist=[...new Set(this.searchlist)]
+                                }
+                                this.searchres.push(item)
+                            }
+                        })
+                    }else{
+                        this.datalists.forEach(item=>{
+                            if(item.name.includes(this.inputValue)){
+                                if(!this.searchlist.includes(this.inputValue)){
+                                    this.searchlist.push(item.name);
+                                    this.searchlist=[...new Set(this.searchlist)]
+                                }
+                                this.searchres.push(item)
+                            }else if(item.address.includes(this.inputValue)){
+                                if(!this.searchlist.includes(this.inputValue)){
+                                    this.searchlist.push(item.address);
+                                    this.searchlist=[...new Set(this.searchlist)]
+                                }
+                                this.searchres.push(item)
+                            }else{
+                                this.searchlist.push(item.phone);
+                                this.searchlist = [...new Set(this.searchlist)]
+                                if(item.phone === Number(this.inputValue)){
+                                    this.searchres.push(item)
+                                }
+                            }
+                        })
+                    }
+
+                        this.encodeArray(this.searchres)
+                }else{
+                    //输入为空，展示所有数据
+                    this.encodeArray(this.datalists)
+                }
 
             }
-
         }
+
     })
 </script>
 </body>

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>表单展示</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- 官网提供的 axios 在线地址 -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+<div id="app" v-cloak>
+    <nav class="nav">
+        <div class="searchBar">
+            <div class="searchbar-main">
+                <input type="text" class="search"
+                       :placeholder="placeholder"
+                       @keyup="search"
+                       v-model="inputValue"
+                       v-focus list="search_item">
+
+                <datalist id="search_item">
+                    <option v-for="item in searchlist" :value="item"></option>
+                </datalist>
+
+                <input type="button" value="搜索" readonly @click="search">
+            </div>
+            <div class="search-condition">
+                <span v-for="(item,index) in factories"
+                      :class="[classArr[index],index === isActive?'active':'']"
+                      @click="active(index)">
+                    {{item}}
+                </span>
+            </div>
+        </div>
+
+        <div class="operation">
+            <span class="addNew" @click="addNew">新增</span>
+            <span class="truncate" @click="clear">清空</span>
+        </div>
+    </nav>
+
+<!--    表格开始-->
+    <table>
+        <thead>
+        <tr>
+            <td class="uid">ID</td>
+            <td class="uname">姓名</td>
+            <td class="uphone">电话</td>
+            <td class="uaddress">內容</td>
+            <td class="op">操作</td>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr v-for="(item,index) in showlist">
+            <td class="uid">{{item.id}}</td>
+            <td class="uname">{{item.name}}</td>
+            <td class="uphone">{{item.phone}}</td>
+            <td class="uaddress">{{item.address}}</td>
+            <td class="op">
+                    <span class="change"
+                          @click = "change(index)">改</span>
+                <span class="delete"
+                      @click = "deleterow(index)">删</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+      <p class="nodata" v-if="isClear">数据空空如也</p>
+<!--    表格结束-->
+
+    <!--    弹出层-->
+    <div class="layer layer_mask" v-if="isShow" v-cloak>
+        <form class="layer_form">
+            <p class="layer_title">{{layertitle}}</p>
+            <label for="uid">id</label>
+            <input type="text" name="id" id="uid"  :disabled="isAble" ref="layeruid" v-model="layerlist.id">
+            <label for="uname" >姓名</label>
+            <input type="text" name="name" id="uname"  v-model="layerlist.name" v-focus>
+            <label for="uphone">电话</label>
+            <input type="text" name="phone" id="uphone" v-model="layerlist.phone">
+            <label for="uadress">地址</label>
+            <input type="text" name="address" id="uadress" v-model="layerlist.address">
+            <button type="submit" id="submit" @click.prevent="update(layerlist)">{{confirmbtn}}</button>
+            <button type="button" id="cancel" @click="cancel">取消</button>
+        </form>
+    </div>
+<!--    弹出层结束-->
+</div>
+
+<script>
+    Vue.directive('focus',{
+        inserted :(el) => {
+            el.focus()
+        }
+    })
+    const app = new Vue({
+        el:'#app',
+        data:{
+            classArr : ['global','name','phone','address'],
+            factories :['全局','姓名','电话','地址'],
+            isActive: 0,
+            inputValue :'',
+            isShow: false,
+            isAble: false,
+            isClear: false,
+            index: '-1',
+            placeholder:'请输入您想查询的字段',
+            datalists : [
+                // {id:1,name:'张三',phone:15678361258,address:'湖北武汉'},
+                // {id:2,name:'张三',phone:15678361258,address:'江西赣州'},
+                // {id:3,name:'李四',phone:15628569934,address:'湖北荆州'},
+                // {id:4,name:'李四',phone:15628569935,address:'湖北荆州'}
+            ],
+            searchlist:[],
+            showlist:[],
+            layerlist:[],
+            searchres : [],
+            layertitle :'',
+            confirmbtn:'',
+            mode:{
+                isGlobal:true,
+                isName:false,
+                isPhone:false,
+                isAddress:false
+            }
+        },
+        created: function () {
+            axios.get('api/init.php').then(res=>{
+                    this.datalists =[];
+                    let keys={
+                        id:"id",
+                        "姓名":"name",
+                        "电话":"phone",
+                        "内容":"address"
+                    }
+                    res.data.map(item=>{
+                        let obj ={}
+                        for(let key in item){
+                            if(keys.hasOwnProperty(key)){
+                                obj[keys[key]] = item[key]
+                            }
+                        }
+                        this.datalists.push(obj)
+                        this.encodeArray(this.datalists)
+                    })
+
+            })
+            this.encodeArray(this.datalists);
+            this.active(0);
+        },
+        methods : {
+            active(index) {
+                this.isActive = index;
+                this.checkmode(index);
+            },
+            encodeArray(arr){
+                this.showlist = JSON.parse(JSON.stringify(arr))
+            },
+            change(index) {
+                this.isShow = !this.isShow;
+                this.isAble = true;
+                this.index = index;
+                this.layertitle = '更新数据';
+                this.confirmbtn = '更新';
+                this.layerlist = this.datalists[index];
+            },
+            deleterow(index) {
+                let del = this.datalists.splice(index, 1);
+                this.encodeArray(this.datalists);
+                let data={
+                    id:del[0].id
+                }
+
+                axios.post("api/del.php", this.encodejson(data))
+                    .then(res=>{
+                        console.log(res)
+                    })
+
+            },
+            cancel() {
+                this.isShow = !this.isShow;
+            },
+            update(arr){
+                let data ={
+                    "id":arr.id,
+                    "name":arr.name,
+                    "phone":arr.phone,
+                    "address":arr.address
+                }
+                if(this.index > -1){
+                    this.$set(this.datalists,this.index,arr);
+                    this.index = '-1';
+                    axios.post("api/update.php", this.encodejson(data))
+                        .then(res=>{
+                            console.log(res)
+                        })
+                }else{
+                    // this.datalists.push(this.layerlist);
+                    if(!arr.id || !arr.name || !arr.phone || !arr.address) return;
+                    this.datalists.push(arr)
+                    this.isClear = false;
+
+                    // let data = new URLSearchParams()
+                    // data.append('id',arr.id)
+                    // data.append('name',arr.name)
+                    // data.append('phone',arr.phone)
+                    // data.append('address',arr.address)
+                    //
+
+                    axios.post("api/add.php", this.encodejson(data))
+                        .then(res=>{
+                        console.log(res)
+                    })
+
+
+                }
+
+                this.isShow = !this.isShow;
+                this.encodeArray(this.datalists);
+            },
+            addNew() {
+                this.isShow = !this.isShow;
+                this.isAble = false;
+                this.layerlist = {};
+                this.layertitle = '新增数据';
+                this.confirmbtn = '新增';
+                this.$nextTick(()=>{
+                    this.$refs.layeruid.focus();
+                });
+            },
+            clear() {
+                this.datalists = [];
+                this.isClear = true;
+                this.encodeArray(this.datalists)
+            },
+            changemode(obj,item){
+                for (let i in obj){
+                    // if(i === item){
+                    //     obj[i] = true
+                    // }else{
+                    //     obj[i] = false
+                    // }
+                    obj[i] = i === item;
+                }
+            },
+            encodejson(obj){
+                let res = '';
+                for (let i in obj){
+                    res += encodeURIComponent(i) +"="+encodeURIComponent(obj[i])+"&"
+                }
+                return res;
+            },
+            checkmode(condition){
+                let mode = '';
+                switch (condition) {
+                    case 0:
+                        mode = 'isGlobal';
+                        break;
+                    case 1:
+                        mode = 'isName';
+                        break;
+                    case 2:
+                        mode = 'isPhone';
+                        break;
+                    case 3:
+                        mode = 'isAddress';
+                        break;
+                    default:
+                        mode = 'isGlobal';
+                }
+                this.changemode(this.mode,mode)
+            },
+            search(e) {
+                if(this.inputValue){
+                    this.searchlist =[];
+                    this.searchres=[];
+
+                    if(this.mode.isName){
+                        this.datalists.forEach(item=>{
+                            if(item.name.includes(this.inputValue)){
+                                if(!this.searchlist.includes(this.inputValue)){
+                                    this.searchlist.push(item.name);
+                                    this.searchlist=[...new Set(this.searchlist)]
+                                }
+                                this.searchres.push(item)
+                            }
+                        })
+                    }else if (this.mode.isPhone){
+                        this.datalists.forEach(item => {
+                            this.searchlist.push(item.phone);
+                            this.searchlist = [...new Set(this.searchlist)]
+                            if(item.phone == Number(this.inputValue)){
+                                this.searchres.push(item)
+                            }
+                        })
+                    }else if(this.mode.isAddress){
+                        this.datalists.forEach(item=>{
+                            if(item.address.includes(this.inputValue)){
+                                if(!this.searchlist.includes(this.inputValue)){
+                                    this.searchlist.push(item.address);
+                                    this.searchlist=[...new Set(this.searchlist)]
+                                }
+                                this.searchres.push(item)
+                            }
+                        })
+                    }else{
+                        this.datalists.forEach(item=>{
+                            if(item.name.includes(this.inputValue)){
+                                if(!this.searchlist.includes(this.inputValue)){
+                                    this.searchlist.push(item.name);
+                                    this.searchlist=[...new Set(this.searchlist)]
+                                }
+                                this.searchres.push(item)
+                            }else if(item.address.includes(this.inputValue)){
+                                if(!this.searchlist.includes(this.inputValue)){
+                                    this.searchlist.push(item.address);
+                                    this.searchlist=[...new Set(this.searchlist)]
+                                }
+                                this.searchres.push(item)
+                            }else{
+                                this.searchlist.push(item.phone);
+                                this.searchlist = [...new Set(this.searchlist)]
+                                if(item.phone == Number(this.inputValue)){
+                                    this.searchres.push(item)
+                                }
+                            }
+                        })
+                    }
+
+                        this.encodeArray(this.searchres)
+                }else{
+                    //输入为空，展示所有数据
+                    this.encodeArray(this.datalists)
+                }
+
+            }
+        }
+
+    })
+</script>
+</body>
+</html>
